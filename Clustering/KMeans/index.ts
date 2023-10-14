@@ -1,19 +1,24 @@
 import { Vector } from "../../data-structures/Vector.ts";
+import { getVariance } from "../../utils/stats.ts";
 import { KMeans, KMeansClusterOptions } from "./src/KMeans.ts";
 
 // Define some sample data points as vectors
 const data: Vector<number>[] = [
-  new Vector([1, 2]),
-  new Vector([2, 3]),
-  new Vector([8, 7]),
-  new Vector([9, 8]),
-  new Vector([1, 1]),
-  new Vector([7, 6]),
-];
+  [2, 3, 1],
+  [4, 6, 2],
+  [6, 7, 2],
+  [8, 5, 3],
+  [3, 4, 1],
+  [5, 6, 2],
+  [7, 4, 3],
+  [4, 5, 1],
+  [6, 4, 2],
+  [8, 6, 3],
+].map((d) => new Vector(d));
 
 // Define the clustering options
 const clusterOptions: KMeansClusterOptions = {
-  k: 2, // Number of clusters
+  k: 3, // Number of clusters
   iterations: 10, // Optional, number of iterations (default is 10)
 };
 
@@ -33,3 +38,6 @@ for (let i = 0; i < clusters.length; i++) {
   console.log(`Cluster ${i + 1}:`);
   console.log(clusters[i]);
 }
+
+console.log("Variance:");
+console.log(clusters.reduce((acc, curr) => acc + getVariance(curr), 0));

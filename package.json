@@ -1,0 +1,22 @@
+{
+  "name": "machine-learning-algos",
+  "version": "0.1.0",
+  "description": "Standard Machine Leaning Algorithms that I wrote",
+  "repository": "https://github.com/chakri68/machine-learning-algos",
+  "author": "chakri68 <chakridevireddy69@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "format": "prettier --write",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  }
+}

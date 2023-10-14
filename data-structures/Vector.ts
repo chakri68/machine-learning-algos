@@ -1,7 +1,7 @@
 export class Vector<T extends number> {
   protected data: T[];
   constructor(data: T[] = []) {
-    this.data = structuredClone(data);
+    this.data = [...data];
   }
 
   getComponents(): number[] {
@@ -23,6 +23,10 @@ export class Vector<T extends number> {
     console.log(this);
   }
 
+  clone(): Vector<number> {
+    return new Vector(this.data);
+  }
+
   toString(): string {
     return `Vector2<${this.data.join(", ")}>`;
   }
@@ -39,7 +43,7 @@ export class Vector<T extends number> {
   }
 
   static scale(a: Vector<number>, scaleFactor: number): Vector<number> {
-    const components = structuredClone(a.data);
+    const components = [...a.data];
     for (let i = 0; i < components.length; i++) {
       components[i] *= scaleFactor;
     }
@@ -58,7 +62,7 @@ export class Vector<T extends number> {
   }
 
   static getNegativeVector(a: Vector<number>) {
-    const components = structuredClone(a.data);
+    const components = [...a.data];
     return new Vector(components.map((component) => -component));
   }
 }

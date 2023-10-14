@@ -24,10 +24,10 @@ export function getRandomElements<T>(arr: T[], n: number = 1): T[] {
   }
 
   const result: T[] = [];
-  const arrayCopy = arr.slice();
+  const arrayCopy = [...arr];
 
   for (let i = 0; i < n; i++) {
-    const randomIndex = Math.floor(Math.random() * arrayCopy.length);
+    const randomIndex = getRandomNumber(0, arrayCopy.length);
     const randomElement = arrayCopy.splice(randomIndex, 1)[0];
     result.push(randomElement);
   }

@@ -1,6 +1,6 @@
 import { Vector } from "../../../data-structures/Vector.ts";
 import { getRandomElements } from "../../../utils/random.ts";
-import { getMean } from "../../../utils/stats.ts";
+import { getMean, getVariance } from "../../../utils/stats.ts";
 import { OptionalObjectOf, mergeOptionals } from "../../../utils/ts.ts";
 
 export type KMeansClusterOptions = {
@@ -21,7 +21,7 @@ export class KMeans {
   private clusterOptions: Required<KMeansClusterOptions>;
   constructor(data: Vector<number>[], clusterOptions: KMeansClusterOptions) {
     this.clusterOptions = mergeOptionals(clusterOptions, defaultOptions);
-    this.data = structuredClone(data);
+    this.data = data.map((d) => d.clone()); // clone
     // Initialze Cluster Data
     const clusterCenters = this.chooseInitialClusters();
     const clusters = Array.from({ length: this.clusterOptions.k }, (_, idx) => [
@@ -35,6 +35,10 @@ export class KMeans {
   }
 
   cluster() {
+    let bestVariance = this.clusterData.clusters.reduce((acc, curr) => {
+      return acc + getVariance(curr);
+    }, 0);
+    let bestClustering = this.cloneClusterData();
     for (
       let iteration = 0;
       iteration < this.clusterOptions.iterations;
@@ -46,8 +50,17 @@ export class KMeans {
       // Update clusters
       this.updateClusters();
 
+      // Check the variance
+      const newVariance = this.clusterData.clusters.reduce(
+        (acc, curr) => acc + getVariance(curr),
+        0
+      );
+      if (newVariance < bestVariance) {
+        bestVariance = newVariance;
+        bestClustering = this.cloneClusterData();
+      }
       // Print results
-      this.printStats(iteration + 1);
+      this.printStats(iteration + 1, newVariance);
     }
   }
 
@@ -70,7 +83,7 @@ export class KMeans {
 
   private updateClusterCenters() {
     // For each cluster, get the mean and set it as the center
-    const { centers, clusters } = this.clusterData;
+    const { clusters } = this.clusterData;
     const newCenters: Vector<number>[] = Array.from({
       length: this.clusterOptions.k,
     });
@@ -99,11 +112,19 @@ export class KMeans {
     return { index: closestClusterIdx, distance: minDistance };
   }
 
-  public printStats(iterationCount: number) {
+  private cloneClusterData() {
+    return {
+      centers: this.clusterData.centers.map((c) => c.clone()), // clone
+      clusters: this.clusterData.clusters.map((c) => c.map((c) => c.clone())), // clone
+    };
+  }
+
+  public printStats(iterationCount: number, variance: number) {
     console.log(
       `
 ===== ITERATION ${iterationCount} =====
       centers: (${this.clusterData.centers.join(", ")})
+      variance: ${variance}
     `
     );
   }

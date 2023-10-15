@@ -127,8 +127,16 @@ export class KMeans {
     interClusterIdx: number
   ) {
     const { clusters } = this.clusterData;
+
     // Intra-Cluster Distance
-    const a = this.getAverageDistance(point, interClusterIdx);
+    const a =
+      clusters[interClusterIdx].length === 1
+        ? 0
+        : this.getAverageDistance(
+            point,
+            interClusterIdx,
+            clusters[interClusterIdx].length - 1
+          );
 
     // Min Inter-Cluster Distance
     const b = Math.min(
@@ -143,7 +151,11 @@ export class KMeans {
     return (b - a) / Math.max(a, b);
   }
 
-  private getAverageDistance(point: Vector<number>, clusterIdx: number) {
+  private getAverageDistance(
+    point: Vector<number>,
+    clusterIdx: number,
+    countOverride?: number
+  ) {
     const { clusters } = this.clusterData;
     return (
       clusters[clusterIdx].reduce(
@@ -151,7 +163,10 @@ export class KMeans {
           acc +
           Vector.add(point, Vector.getNegativeVector(curr)).getMagnitude(),
         0
-      ) / clusters[clusterIdx].length
+      ) /
+      (countOverride !== undefined
+        ? countOverride
+        : clusters[clusterIdx].length)
     );
   }
 

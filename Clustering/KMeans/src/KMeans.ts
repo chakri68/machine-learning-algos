@@ -1,6 +1,6 @@
 import { Vector } from "../../../data-structures/Vector.ts";
 import { getRandomElements } from "../../../utils/random.ts";
-import { getMean, getVariance } from "../../../utils/stats.ts";
+import { getMean, getVariance, sum } from "../../../utils/stats.ts";
 import { OptionalObjectOf, mergeOptionals } from "../../../utils/ts.ts";
 
 export type KMeansClusterOptions = {
@@ -60,7 +60,7 @@ export class KMeans {
         bestClustering = this.cloneClusterData();
       }
       // Print results
-      this.printStats(iteration + 1, newVariance);
+      this.printStats(iteration + 1, newVariance, this.getSilhouetteScore());
     }
   }
 
@@ -112,6 +112,49 @@ export class KMeans {
     return { index: closestClusterIdx, distance: minDistance };
   }
 
+  private getSilhouetteScore() {
+    const { clusters } = this.clusterData;
+    const coefficients = clusters
+      .map((cluster, clusterIdx) =>
+        cluster.map((point) => this.getSilhouetteCoefficient(point, clusterIdx))
+      )
+      .flat();
+    return sum(...coefficients) / coefficients.length;
+  }
+
+  private getSilhouetteCoefficient(
+    point: Vector<number>,
+    interClusterIdx: number
+  ) {
+    const { clusters } = this.clusterData;
+    // Intra-Cluster Distance
+    const a = this.getAverageDistance(point, interClusterIdx);
+
+    // Min Inter-Cluster Distance
+    const b = Math.min(
+      ...(clusters
+        .map((_, idx) => {
+          if (idx === interClusterIdx) return undefined;
+          return this.getAverageDistance(point, idx);
+        })
+        .filter((avgDistance) => avgDistance !== undefined) as number[])
+    );
+
+    return (b - a) / Math.max(a, b);
+  }
+
+  private getAverageDistance(point: Vector<number>, clusterIdx: number) {
+    const { clusters } = this.clusterData;
+    return (
+      clusters[clusterIdx].reduce(
+        (acc, curr) =>
+          acc +
+          Vector.add(point, Vector.getNegativeVector(curr)).getMagnitude(),
+        0
+      ) / clusters[clusterIdx].length
+    );
+  }
+
   private cloneClusterData() {
     return {
       centers: this.clusterData.centers.map((c) => c.clone()), // clone
@@ -119,12 +162,17 @@ export class KMeans {
     };
   }
 
-  public printStats(iterationCount: number, variance: number) {
+  public printStats(
+    iterationCount: number,
+    variance: number,
+    silhouetteScore: number
+  ) {
     console.log(
       `
 ===== ITERATION ${iterationCount} =====
-      centers: (${this.clusterData.centers.join(", ")})
-      variance: ${variance}
+      Centers: (${this.clusterData.centers.join(", ")})
+      Variance: ${variance}
+      Silhouette Score: ${silhouetteScore}
     `
     );
   }

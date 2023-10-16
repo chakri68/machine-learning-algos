@@ -1,7 +1,7 @@
 import { IGAIndividual, IGAWorld } from "../interfaces.ts";
 
 export interface ISpawnStrategy {
-  spawn(): IGAIndividual[];
+  spawn(n: number): IGAIndividual[];
 }
 
-export type ISpawnStrategyGen = (world: IGAWorld) => ISpawnStrategy;
+export type ISpawnStrategyGen<S> = (world: IGAWorld<S>) => ISpawnStrategy;

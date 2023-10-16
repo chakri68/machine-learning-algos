@@ -4,4 +4,4 @@ export interface IFitnessStrategy {
   getFitness(individual: IGAIndividual): number;
 }
 
-export type IFitnessStrategyGen = (world: IGAWorld) => IFitnessStrategy;
+export type IFitnessStrategyGen<S> = (world: IGAWorld<S>) => IFitnessStrategy;

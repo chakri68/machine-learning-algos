@@ -8,7 +8,7 @@ import {
   IFitnessStrategyGen,
 } from "./Strategies/FitnessStrategy.ts";
 import {
-  IMuationStrategy,
+  IMutationStrategy,
   IMuationStrategyGen,
 } from "./Strategies/MutationStrategy.ts";
 import {
@@ -19,41 +19,34 @@ import {
   ISpawnStrategy,
   ISpawnStrategyGen,
 } from "./Strategies/SpawnStrategy.ts";
-import { IGAIndividual, IGAWorld } from "./interfaces.ts";
+import { IGAIndividual, IGAStrategies, IGAWorld } from "./interfaces.ts";
 
 export type GAWorldOptions = {
   populationSize?: number;
   maxIterations?: number;
 };
 
-export type GAWorldOptionsProp = GAWorldOptions & {
-  fitnessStrategy: IFitnessStrategyGen;
-  spawnStrategy: ISpawnStrategyGen;
+export type GAWorldOptionsProp<S> = GAWorldOptions & {
+  fitnessStrategy: IFitnessStrategyGen<S>;
+  spawnStrategy: ISpawnStrategyGen<S>;
   crossoverStrategy: ICrossoverStrategyGen;
   mutationStrategy: IMuationStrategyGen;
-  selectionStrategy: ISelectionStrategyGen;
+  selectionStrategy: ISelectionStrategyGen<S>;
 };
 
-const defaultOptions: OptionalObjectOf<GAWorldOptionsProp> = {
-  maxIterations: 100,
-  populationSize: 10,
-};
-
-export type Strategies = {
-  fitnessStrategy: IFitnessStrategy;
-  spawnStrategy: ISpawnStrategy;
-  crossoverStrategy: ICrossoverStrategy;
-  mutationStrategy: IMuationStrategy;
-  selectionStrategy: ISelectionStrategy;
-};
-
-export class GAWorld implements IGAWorld {
+export class GAWorld<S> implements IGAWorld<S> {
+  private defaultOptions: OptionalObjectOf<GAWorldOptionsProp<S>> = {
+    maxIterations: 100,
+    populationSize: 10,
+  };
   private options: Required<GAWorldOptions>;
   population: IGAIndividual[];
-  strategies: Strategies;
+  strategies: IGAStrategies;
   generationCount: number = 0;
-  constructor(options: GAWorldOptionsProp) {
-    const mergedOptions = mergeOptionals(options, defaultOptions);
+  data: S;
+  constructor(initData: S, options: GAWorldOptionsProp<S>) {
+    this.data = initData;
+    const mergedOptions = mergeOptionals(options, this.defaultOptions);
     this.options = mergedOptions;
     this.strategies = {
       crossoverStrategy: mergedOptions.crossoverStrategy(),
@@ -63,7 +56,9 @@ export class GAWorld implements IGAWorld {
       spawnStrategy: mergedOptions.spawnStrategy(this),
     };
 
-    this.population = this.strategies.spawnStrategy.spawn();
+    this.population = this.strategies.spawnStrategy.spawn(
+      this.options.populationSize
+    );
   }
 
   nextGen() {
@@ -77,12 +72,10 @@ export class GAWorld implements IGAWorld {
         this.strategies.crossoverStrategy.crossover(mother, father);
 
       // Mutate the obtained individuals
-      const mutatedOffspring1 =
-        this.strategies.mutationStrategy.mutate(offspring1);
-      const mutatedOffspring2 =
-        this.strategies.mutationStrategy.mutate(offspring2);
+      this.strategies.mutationStrategy.mutate(offspring1);
+      this.strategies.mutationStrategy.mutate(offspring2);
 
-      newPopulation.push(mutatedOffspring1, mutatedOffspring2);
+      newPopulation.push(offspring1, offspring2);
     }
 
     const mergedPopulation = [...this.population, ...newPopulation];
@@ -100,10 +93,18 @@ export class GAWorld implements IGAWorld {
 
   start() {
     for (let i = 0; i < this.options.maxIterations; i++) {
-      console.log({
-        generationCount: this.generationCount,
-        population: this.population,
-      });
+      console.log(`
+      ========== GENERATION ${i + 1} ==========
+            POPULATION
+${this.population
+  .map(
+    (individual) =>
+      individual.genome.seq.join(", ") +
+      " fitness: " +
+      this.strategies.fitnessStrategy.getFitness(individual)
+  )
+  .join("\n")}
+      `);
       this.nextGen();
     }
   }

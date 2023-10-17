@@ -4,4 +4,4 @@ export interface ISpawnStrategy {
   spawn(n: number): IGAIndividual[];
 }
 
-export type ISpawnStrategyGen<S> = (world: IGAWorld<S>) => ISpawnStrategy;
+export type ISpawnStrategyGen = (world: IGAWorld) => ISpawnStrategy;

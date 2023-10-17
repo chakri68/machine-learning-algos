@@ -1,22 +1,23 @@
-import { IGAIndividual, IGAWorld } from "../interfaces.ts";
+import { TSPIndividual } from "../TSPIndividual.ts";
+import { TSPWorld } from "../TSPWorld.ts";
 
-export interface ISelectionStrategy {
-  select(): [IGAIndividual, IGAIndividual];
+export interface TSPSelectionStrategy {
+  select(): [TSPIndividual, TSPIndividual];
 }
 
-export type ISelectionStrategyGen = (world: IGAWorld) => ISelectionStrategy;
+export type TSPSelectionStrategyGen = (world: TSPWorld) => TSPSelectionStrategy;
 
-export class BiasedRouletteSelection implements ISelectionStrategy {
-  constructor(private world: IGAWorld) {}
+export class BiasedRouletteSelection implements TSPSelectionStrategy {
+  constructor(private world: TSPWorld) {}
 
-  selectOne(): IGAIndividual {
+  selectOne(): TSPIndividual {
     const totalFitness = this.world.population.reduce(
       (acc, individual) =>
         acc + this.world.strategies.fitnessStrategy.getFitness(individual),
       0
     );
     const cumulativeFitness = this.world.population.reduce(
-      (acc: number[], individual: IGAIndividual) => {
+      (acc: number[], individual: TSPIndividual) => {
         acc.push(
           (acc?.[acc.length - 1] ?? 0) +
             this.world.strategies.fitnessStrategy.getFitness(individual) /
@@ -28,25 +29,27 @@ export class BiasedRouletteSelection implements ISelectionStrategy {
     );
 
     const random = Math.random();
-    let selectedIndividual: IGAIndividual = this.world.population[0];
+    let selectedIndividual: TSPIndividual = this.world.population[0];
     let i = 0;
     for (const fitness of cumulativeFitness) {
-      if (fitness <= random) {
+      if (random <= fitness) {
         selectedIndividual = this.world.population[i];
         break;
       }
       i += 1;
     }
-
     return selectedIndividual;
   }
 
-  select(): [IGAIndividual, IGAIndividual] {
+  select(): [TSPIndividual, TSPIndividual] {
     if (this.world.population.length === 1)
       throw new Error("Individuals can't be selected from a population of 1");
     const selected1 = this.selectOne();
     let selected2 = this.selectOne();
-    // while (selected1 === selected2) selected2 = this.selectOne();
-    return [this.world.population[0], this.world.population[1]];
+    while (selected1 === selected2) {
+      console.log("SAME, FINDING ANOTHER FATHER");
+      selected2 = this.selectOne();
+    }
+    return [selected1, selected2];
   }
 }

@@ -1,13 +1,15 @@
-import { IGAGenome } from "./interfaces.ts";
+import { IClonable, IGAGenome } from "./interfaces.ts";
 
-export class GAGenome implements IGAGenome {
-  seq: number[];
+type G = IClonable;
 
-  constructor(sequence: number[]) {
-    this.seq = [...sequence];
+export class GAGenome implements IGAGenome, IClonable {
+  seq: G[];
+
+  constructor(sequence: G[]) {
+    this.seq = sequence.map((s) => s.clone()) as G[];
   }
 
-  clone(): IGAGenome {
-    return new GAGenome([...this.seq]);
+  clone(): this {
+    return new GAGenome(this.seq.map((s) => s.clone()) as G[]) as this;
   }
 }

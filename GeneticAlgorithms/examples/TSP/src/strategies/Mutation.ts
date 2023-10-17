@@ -1,17 +1,16 @@
-import { getRandomNumber } from "../../../utils/random.ts";
-import { GAIndividual } from "../Individual.ts";
-import { IGAIndividual } from "../interfaces.ts";
+import { getRandomNumber } from "../../../../../utils/random.ts";
+import { TSPIndividual } from "../TSPIndividual.ts";
 
-export interface IMutationStrategy {
-  mutate(individual: IGAIndividual): void;
-  mutate(individual: IGAIndividual, inPlace: false): IGAIndividual;
+export interface TSPMutationStrategy {
+  mutate(individual: TSPIndividual): void;
+  mutate(individual: TSPIndividual, inPlace: false): TSPIndividual;
 }
 
-export type IMuationStrategyGen = (
+export type TSPMutationStrategyGen = (
   mutationChance?: number
-) => IMutationStrategy;
+) => TSPMutationStrategy;
 
-export class RotateMutation implements IMutationStrategy {
+export class RotateMutation implements TSPMutationStrategy {
   options: {
     mutationChance: number;
   };
@@ -21,12 +20,12 @@ export class RotateMutation implements IMutationStrategy {
     };
   }
 
-  mutate(individual: IGAIndividual): void;
-  mutate(individual: IGAIndividual, inPlace: false): IGAIndividual;
+  mutate(individual: TSPIndividual): void;
+  mutate(individual: TSPIndividual, inPlace: false): TSPIndividual;
   mutate(
-    individual: IGAIndividual,
+    individual: TSPIndividual,
     inPlace: boolean = true
-  ): IGAIndividual | void {
+  ): TSPIndividual | void {
     if (inPlace) {
       const mutate = Math.random() < this.options.mutationChance ? true : false;
       if (!mutate) return;
@@ -60,7 +59,7 @@ export class RotateMutation implements IMutationStrategy {
       for (let i = swapEl1; i <= swapEl2; i++) {
         genomeSeq[i] = subGenome[i - swapEl1];
       }
-      return new GAIndividual(genomeClone);
+      return new TSPIndividual(genomeClone);
     }
   }
 }

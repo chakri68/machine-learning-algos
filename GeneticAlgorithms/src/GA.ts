@@ -8,8 +8,8 @@ import {
   IFitnessStrategyGen,
 } from "./Strategies/FitnessStrategy.ts";
 import {
-  IMutationStrategy,
   IMuationStrategyGen,
+  IMutationStrategy,
 } from "./Strategies/MutationStrategy.ts";
 import {
   ISelectionStrategy,
@@ -19,33 +19,40 @@ import {
   ISpawnStrategy,
   ISpawnStrategyGen,
 } from "./Strategies/SpawnStrategy.ts";
-import { IGAIndividual, IGAStrategies, IGAWorld } from "./interfaces.ts";
+import { IGAIndividual, IGAWorld } from "./interfaces.ts";
 
 export type GAWorldOptions = {
   populationSize?: number;
   maxIterations?: number;
 };
 
-export type GAWorldOptionsProp<S> = GAWorldOptions & {
-  fitnessStrategy: IFitnessStrategyGen<S>;
-  spawnStrategy: ISpawnStrategyGen<S>;
-  crossoverStrategy: ICrossoverStrategyGen;
-  mutationStrategy: IMuationStrategyGen;
-  selectionStrategy: ISelectionStrategyGen<S>;
+type IGAStrategies = {
+  fitnessStrategy: IFitnessStrategy;
+  spawnStrategy: ISpawnStrategy;
+  crossoverStrategy: ICrossoverStrategy;
+  mutationStrategy: IMutationStrategy;
+  selectionStrategy: ISelectionStrategy;
 };
 
-export class GAWorld<S> implements IGAWorld<S> {
-  private defaultOptions: OptionalObjectOf<GAWorldOptionsProp<S>> = {
+export type GAWorldOptionsProp = GAWorldOptions & {
+  fitnessStrategy: IFitnessStrategyGen;
+  spawnStrategy: ISpawnStrategyGen;
+  crossoverStrategy: ICrossoverStrategyGen;
+  mutationStrategy: IMuationStrategyGen;
+  selectionStrategy: ISelectionStrategyGen;
+};
+
+export class GAWorld implements IGAWorld {
+  private defaultOptions: OptionalObjectOf<GAWorldOptionsProp> = {
     maxIterations: 100,
     populationSize: 10,
   };
   private options: Required<GAWorldOptions>;
   population: IGAIndividual[];
-  strategies: IGAStrategies;
+  private strategies: IGAStrategies;
   generationCount: number = 0;
-  data: S;
-  constructor(initData: S, options: GAWorldOptionsProp<S>) {
-    this.data = initData;
+
+  constructor(options: GAWorldOptionsProp) {
     const mergedOptions = mergeOptionals(options, this.defaultOptions);
     this.options = mergedOptions;
     this.strategies = {

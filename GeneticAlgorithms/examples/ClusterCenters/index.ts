@@ -1,9 +1,9 @@
-import { SinglePointCrossover } from "./src/Strategies/Crossover.ts";
-import { RotateMutation } from "./src/Strategies/Mutation.ts";
-import { BiasedRouletteSelection } from "./src/Strategies/Selection.ts";
+import { SinglePointCrossover } from "../../src/Strategies/CrossoverStrategy.ts";
+import { RotateMutation } from "../../src/Strategies/MutationStrategy.ts";
+import { BiasedRouletteSelection } from "../../src/Strategies/SelectionStrategy.ts";
 import { TSPWorld } from "./src/TSPWorld.ts";
-import { EuclideanFitness } from "./src/Strategies/Fitness.ts";
-import { RandomSpawn } from "./src/Strategies/Spawn.ts";
+import { EuclideanFitness } from "./src/strategies/Fitness.ts";
+import { RandomSpawn } from "./src/strategies/Spawn.ts";
 
 const cities: [number, number][] = [
   [1, 10], // 0
@@ -22,14 +22,13 @@ const world = new TSPWorld(
     })),
   },
   {
-    populationSize: 10,
-  },
-  {
     crossoverStrategy: () => new SinglePointCrossover(),
+    fitnessStrategy: (world) => new EuclideanFitness(world),
     mutationStrategy: () => new RotateMutation(),
     selectionStrategy: (world) => new BiasedRouletteSelection(world),
-    fitnessStrategy: (world) => new EuclideanFitness(world),
     spawnStrategy: (world) => new RandomSpawn(world),
+    maxIterations: 10,
+    populationSize: 20,
   }
 );
 

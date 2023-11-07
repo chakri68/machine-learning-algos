@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["ESNext", "DOM"],
+    "module": "NodeNext",
+    "lib": ["ESNext", "deno.ns"],
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true
   }
 }

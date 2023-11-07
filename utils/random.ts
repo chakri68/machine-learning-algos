@@ -41,3 +41,24 @@ export function getRandomElements<T>(arr: T[], n: number = 1): T[] {
 export function getRandomNumber(min: number = 0, max: number = 1): number {
   return min + Math.floor(Math.random() * (max - min));
 }
+
+export function getNRandomNumbers(
+  min: number,
+  max: number,
+  n: number
+): number[] {
+  const randomNumbers: number[] = [];
+
+  if (min >= max || max - min < n) {
+    throw new Error("Invalid range for random");
+  }
+
+  while (randomNumbers.length < n) {
+    const randomNumber = getRandomNumber(min, max);
+    if (!randomNumbers.includes(randomNumber)) {
+      randomNumbers.push(randomNumber);
+    }
+  }
+
+  return randomNumbers;
+}

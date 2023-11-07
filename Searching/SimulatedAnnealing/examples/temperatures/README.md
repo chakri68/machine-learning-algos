@@ -4,7 +4,7 @@ In this example, we'll try to find the minimum temperature using Simulated Annea
 
 ## Dataset
 
-The json file with the data can be found [here](./data/temperatures.json)
+The json file with the data can be found [here](/data/temperatures.json)
 
 It contains records of type
 

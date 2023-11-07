@@ -6,10 +6,12 @@ import { OptionalObjectOf, mergeOptionals } from "../../../utils/ts.ts";
 export type KMeansClusterOptions = {
   iterations?: number;
   k: number;
+  initialCluster?: Vector<number>[] | null;
 };
 
 const defaultOptions: OptionalObjectOf<KMeansClusterOptions> = {
   iterations: 10,
+  initialCluster: null,
 };
 
 export class KMeans {
@@ -23,7 +25,10 @@ export class KMeans {
     this.clusterOptions = mergeOptionals(clusterOptions, defaultOptions);
     this.data = data.map((d) => d.clone()); // clone
     // Initialze Cluster Data
-    const clusterCenters = this.chooseInitialClusters();
+    const clusterCenters =
+      this.clusterOptions.initialCluster === null
+        ? this.chooseInitialClusters()
+        : this.clusterOptions.initialCluster;
     const clusters = Array.from({ length: this.clusterOptions.k }, (_, idx) => [
       clusterCenters[idx],
     ]);
@@ -35,15 +40,16 @@ export class KMeans {
   }
 
   cluster() {
-    let bestVariance = this.clusterData.clusters.reduce((acc, curr) => {
-      return acc + getVariance(curr);
-    }, 0);
+    // let bestVariance = this.clusterData.clusters.reduce((acc, curr) => {
+    //   return acc + getVariance(curr);
+    // }, 0);
     let bestClustering = this.cloneClusterData();
     for (
       let iteration = 0;
       iteration < this.clusterOptions.iterations;
       iteration++
     ) {
+      console.log("ITERATION ", iteration + 1);
       // Update cluster centers
       this.updateClusterCenters();
 
@@ -51,16 +57,13 @@ export class KMeans {
       this.updateClusters();
 
       // Check the variance
-      const newVariance = this.clusterData.clusters.reduce(
-        (acc, curr) => acc + getVariance(curr),
-        0
-      );
-      if (newVariance < bestVariance) {
-        bestVariance = newVariance;
-        bestClustering = this.cloneClusterData();
-      }
+      // const newVariance = this.getVariance();
+      // if (newVariance < bestVariance) {
+      //   bestVariance = newVariance;
+      //   bestClustering = this.cloneClusterData();
+      // }
       // Print results
-      this.printStats(iteration + 1, newVariance, this.getSilhouetteScore());
+      // this.printStats(iteration + 1, newVariance, this.getSilhouetteScore());
     }
   }
 
@@ -112,7 +115,7 @@ export class KMeans {
     return { index: closestClusterIdx, distance: minDistance };
   }
 
-  private getSilhouetteScore() {
+  getSilhouetteScore() {
     const { clusters } = this.clusterData;
     const coefficients = clusters
       .map((cluster, clusterIdx) =>
@@ -120,6 +123,13 @@ export class KMeans {
       )
       .flat();
     return sum(...coefficients) / coefficients.length;
+  }
+
+  getVariance() {
+    return this.clusterData.clusters.reduce(
+      (acc, curr) => acc + getVariance(curr),
+      0
+    );
   }
 
   private getSilhouetteCoefficient(

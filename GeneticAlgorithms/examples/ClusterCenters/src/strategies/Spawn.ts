@@ -1,22 +1,31 @@
-import { shuffleArray } from "../../../../../utils/random.ts";
-import { GAGenome } from "../../../../src/Genome.ts";
-import { GAIndividual } from "../../../../src/Individual.ts";
-import { ISpawnStrategy } from "../../../../src/Strategies/SpawnStrategy.ts";
-import { IGAIndividual, IGAWorld } from "../../../../src/interfaces.ts";
-import { TSPWorldState } from "../interfaces.ts";
+import { getNRandomNumbers } from "../../../../../utils/random.ts";
+import { CGAGneome } from "../CGAGenome.ts";
+import { CGAIndividual } from "../CGAIndividual.ts";
+import { CGAWorld } from "../CGAWorld.ts";
 
-export class RandomSpawn implements ISpawnStrategy {
-  constructor(private world: IGAWorld<TSPWorldState>) {}
+export interface CGASpawnStrategy {
+  world: CGAWorld;
+  spawn(n: number): CGAIndividual[];
+}
 
-  spawn(n: number): IGAIndividual[] {
-    const randomSequences = [];
-    for (let i = 0; i < n; i++)
-      randomSequences.push(
-        shuffleArray(
-          Array.from({ length: this.world.data.cities.length }, (_, idx) => idx)
-        )
+export type CGASpawnStrategyGen = (world: CGAWorld) => CGASpawnStrategy;
+
+export class RandomSpawn implements CGASpawnStrategy {
+  constructor(public world: CGAWorld) {}
+
+  spawn(n: number): CGAIndividual[] {
+    // Selecting n different sets of k points
+    const nRandomKCenters: CGAIndividual[] = [];
+    for (let i = 0; i < n; i++) {
+      // select K random points from the input points
+      const randomPoints = getNRandomNumbers(
+        0,
+        this.world.data.points.length,
+        this.world.data.k
       );
+      nRandomKCenters.push(new CGAIndividual(new CGAGneome(randomPoints)));
+    }
 
-    return randomSequences.map((seq) => new GAIndividual(new GAGenome(seq)));
+    return nRandomKCenters;
   }
 }

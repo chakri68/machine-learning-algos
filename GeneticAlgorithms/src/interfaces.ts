@@ -1,6 +1,4 @@
-export interface IClonable {
-  clone(): this;
-}
+import { IClonable } from "../../utils/interfaces/IClonable.ts";
 
 export interface IGAGenome extends IClonable {
   seq: IClonable[];

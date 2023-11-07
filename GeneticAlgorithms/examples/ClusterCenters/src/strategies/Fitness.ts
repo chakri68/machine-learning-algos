@@ -1,26 +1,50 @@
-import { IFitnessStrategy } from "../../../../src/Strategies/FitnessStrategy.ts";
-import { IGAIndividual, IGAWorld } from "../../../../src/interfaces.ts";
-import { TSPWorldState } from "../interfaces.ts";
+import { KMeans } from "../../../../../Clustering/KMeans/src/KMeans.ts";
+import { CGAIndividual } from "../CGAIndividual.ts";
+import { CGAWorld } from "../CGAWorld.ts";
 
-export class EuclideanFitness implements IFitnessStrategy {
-  constructor(private world: IGAWorld<TSPWorldState>) {}
+export interface CGAFitnessStrategy {
+  world: CGAWorld;
+  getFitness(individual: CGAIndividual): number;
+}
 
-  getFitness(individual: IGAIndividual): number {
-    const citiesSeq = individual.genome.seq;
+export type CGAFitnessStrategyGen = (world: CGAWorld) => CGAFitnessStrategy;
 
-    return -citiesSeq.reduce(
-      (acc, _, idx) =>
-        acc +
-        this.getEuclideanDistance(
-          this.world.data.cities[citiesSeq[idx]].location,
-          this.world.data.cities[citiesSeq[(idx + 1) % citiesSeq.length]]
-            .location
-        ),
-      0
-    );
+export class VarianceFitness implements CGAFitnessStrategy {
+  constructor(public world: CGAWorld) {}
+
+  // Lower Variance better the clustering, higher the fitness
+  getFitness(individual: CGAIndividual): number {
+    // Run the KMeans algorithm with the given set of initial centers to get the variance
+    const kmeans = new KMeans(this.world.data.points, {
+      k: this.world.data.k,
+      iterations: this.world.data.iterations,
+      initialCluster: individual.genome.seq.map(
+        ({ idx }) => this.world.data.points[idx]
+      ),
+    });
+
+    kmeans.cluster();
+
+    return -kmeans.getVariance();
   }
+}
 
-  getEuclideanDistance(a: [number, number], b: [number, number]): number {
-    return Math.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2);
+export class SilhouetteFitness implements CGAFitnessStrategy {
+  constructor(public world: CGAWorld) {}
+
+  // higher the score, higher the fitness
+  getFitness(individual: CGAIndividual): number {
+    // Run the KMeans algorithm with the given set of initial centers to get the silhouette score
+    const kmeans = new KMeans(this.world.data.points, {
+      k: this.world.data.k,
+      iterations: this.world.data.iterations,
+      initialCluster: individual.genome.seq.map(
+        ({ idx }) => this.world.data.points[idx]
+      ),
+    });
+
+    kmeans.cluster();
+
+    return kmeans.getSilhouetteScore();
   }
 }

@@ -15,3 +15,9 @@ export function mergeOptionals<T extends object>(
 ) {
   return { ...defaultOptions, ...optionals } as Required<T>;
 }
+
+export function assertOrThrow<T>(value: T | undefined | null) {
+  if (value === undefined || value === null) throw new Error("Assertion Error");
+
+  return value;
+}
